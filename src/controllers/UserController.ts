@@ -65,7 +65,7 @@ export default class UserController {
     const { id } = req.params
     const user: UpdateUserDTO = req.body
 
-    if (parseInt(id) !== req.user.id || !req.user.admin) {
+    if (!req.user.admin && parseInt(id) !== req.user.id) {
       res.status(403).json({ message: 'You cant edit this user' })
       return
     }
