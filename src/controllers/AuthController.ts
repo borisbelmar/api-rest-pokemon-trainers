@@ -38,6 +38,7 @@ export default class AuthController {
       await registerSchema.validateAsync(user)
     } catch (error) {
       res.status(400).json({ error: error.message })
+      return
     }
 
     const hashedPassword = bcrypt.hashSync(user.password, 10)
