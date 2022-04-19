@@ -21,10 +21,12 @@ export default function tokenValidator(options?: TokenValidatorOptions) {
       req.user = decoded
     } catch (err) {
       res.status(401).json({ message: "Missing authorization header" })
+      return
     }
 
     if (options?.adminOnly && !req.user.admin) {
       res.status(403).json({ message: "You need admin permissions" })
+      return
     }
     return next()
   }
