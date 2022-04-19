@@ -3,6 +3,7 @@ export interface BaseUserDTO {
   firstName: string
   lastName: string
   email: string
+  admin?: boolean
 }
 
 export interface UserDTO extends BaseUserDTO {
@@ -22,6 +23,7 @@ export interface LoginUserDTO extends UserDTO {
 export interface UserTokenPayload {
   id: number
   email: string
+  admin: boolean
   exp: number
   iat: number
 }

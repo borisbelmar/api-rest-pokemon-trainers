@@ -24,6 +24,9 @@ export function mapTrainerCreateDtoToEntity(trainer: CreateTrainerDTO): TrainerC
 }
 
 export function mapTrainerUpdateDtoToEntity(trainer: UpdateTrainerDTO): TrainerUpdateEntity {
+  if (!trainer.pokemons) {
+    return { ...trainer, pokemons: undefined }
+  }
   return {
     ...trainer,
     pokemons: transformPokemonsToString(trainer.pokemons)

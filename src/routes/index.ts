@@ -8,8 +8,8 @@ import userRoutes from './userRoutes'
 const apiRoutes = Router()
 
 apiRoutes.use('/', healthRoutes)
-apiRoutes.use('/users', tokenValidator, userRoutes)
-apiRoutes.use('/trainers', tokenValidator, trainerRoutes)
+apiRoutes.use('/users', userRoutes)
+apiRoutes.use('/trainers', tokenValidator(), trainerRoutes)
 apiRoutes.use('/auth', authRoutes)
 
 export default apiRoutes

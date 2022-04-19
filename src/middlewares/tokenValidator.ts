@@ -1,22 +1,31 @@
 import { NextFunction, Request, Response } from "express"
 import { verifyToken } from "../lib/jwt"
 
-export default async function tokenValidator(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization
+interface TokenValidatorOptions {
+  adminOnly?: boolean
+}
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token not provided' })
-  }
+export default function tokenValidator(options?: TokenValidatorOptions) {
+  return async function (req: Request, res: Response, next: NextFunction) {
+    const authHeader = req.headers.authorization
 
-  const [, token] = authHeader.split(' ')
+    if (!authHeader) {
+      res.status(401).json({ message: "Missing authorization header" })
+      return
+    }
 
-  try {
-    const decoded = verifyToken(token)
+    const [, token] = authHeader.split(' ')
 
-    req.user = decoded
+    try {
+      const decoded = verifyToken(token)
+      req.user = decoded
+    } catch (err) {
+      res.status(401).json({ message: "Missing authorization header" })
+    }
 
+    if (options?.adminOnly && !req.user.admin) {
+      res.status(403).json({ message: "You need admin permissions" })
+    }
     return next()
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' })
   }
 }

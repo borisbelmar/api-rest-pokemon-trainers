@@ -30,37 +30,64 @@ export default class UserController {
     try {
       await createUserSchema.validateAsync(user)
     } catch (error) {
-      res.status(400).json({ error: error.message })
+      res.status(400).json({ message: error.message })
       return
     }
 
     const repository = new UserRepository()
 
     const hashedPassword = bcrypt.hashSync(user.password, 10)
-
-    const newUser = repository.create({ ...user, password: hashedPassword })
-    res.status(201).json(newUser)
+    
+    try {
+      const newUser = await repository.create({ ...user, password: hashedPassword })
+      res.status(201).json(newUser)
+    } catch (error) {
+      if (error.code = 'P2002') {
+        res.status(409).json({ message: 'User already exists' })
+        return
+      }
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 
   public readonly update = async (req: Request, res: Response) => {
     const { id } = req.params
     const user: UpdateUserDTO = req.body
 
-    try {
-      await updateUserSchema.validateAsync(user)
-    } catch (error) {
-      res.status(400).json({ error: error.message })
+    if (parseInt(id) !== req.user.id || !req.user.admin) {
+      res.status(403).json({ message: 'You cant edit this user' })
       return
     }
 
-    const repository = new UserRepository()
-    await repository.update(parseInt(id), user)
+    try {
+      await updateUserSchema.validateAsync(user)
+    } catch (error) {
+      res.status(400).json({ message: error.message })
+      return
+    }
+    
+    const userForUpdate = user.password ? { ...user, password: bcrypt.hashSync(user.password, 10) } : user
 
-    res.sendStatus(204)
+    const repository = new UserRepository()
+
+    try {
+      await repository.update(parseInt(id), userForUpdate)
+      res.sendStatus(204)
+    } catch (error) {
+      if (error.code = 'P2002') {
+        res.status(409).json({ message: 'User already exists' })
+      }
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 
   public readonly delete = async (req: Request, res: Response) => {
     const { id } = req.params
+
+    if (parseInt(id) === req.user.id) {
+      res.status(403).json({ message: 'You cant delete yourself' })
+      return
+    }
 
     const repository = new UserRepository()
     await repository.delete(parseInt(id))

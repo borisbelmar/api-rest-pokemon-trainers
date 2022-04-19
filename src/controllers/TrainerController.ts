@@ -32,15 +32,22 @@ export default class TrainerController {
     try {
       await createTrainerSchema.validateAsync(trainer)
     } catch (error) {
-      res.status(400).json({ error: error.message })
+      res.status(400).json({ message: error.message })
       return
     }
 
     const user = req.user as UserTokenPayload
     const repository = new TrainerRepository(user.id)
-    const newTrainer = await repository.create(trainer)
-
-    res.status(201).json(newTrainer)
+    try {
+      const newTrainer = await repository.create(trainer)
+      res.status(201).json(newTrainer)
+    } catch (error) {
+      if (error.code = 'P2002') {
+        res.status(409).json({ message: 'Trainer already exists' })
+        return
+      }
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 
   public readonly update = async (req: Request, res: Response) => {
@@ -50,16 +57,22 @@ export default class TrainerController {
     try {
       await updateTrainerSchema.validateAsync(trainer)
     } catch (error) {
-      res.status(400).json({ error: error.message })
+      res.status(400).json({ message: error.message })
       return
     }
 
     const user = req.user as UserTokenPayload
     const repository = new TrainerRepository(user.id)
-
-    await repository.update(parseInt(id), trainer)
-
-    res.sendStatus(204)
+    try {
+      await repository.update(parseInt(id), trainer)
+      res.sendStatus(204)
+    } catch (error) {
+      if (error.code = 'P2002') {
+        res.status(409).json({ message: 'Trainer already exists' })
+        return
+      }
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 
   public readonly delete = async (req: Request, res: Response) => {

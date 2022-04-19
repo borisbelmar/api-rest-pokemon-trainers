@@ -15,6 +15,7 @@ model User {
   lastName  String    @db.VarChar(60)
   email     String    @unique @db.VarChar(255)
   password  String    @db.VarChar(255)
+  admin     Boolean   @default(false)
   trainers  Trainer[]
 }
 
