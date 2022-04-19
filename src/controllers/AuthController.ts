@@ -17,16 +17,21 @@ export default class AuthController {
     }
 
     const repository = new UserRepository()
-    const user = await repository.findByEmail(credentials.email)
+    try {
+      const user = await repository.findByEmail(credentials.email)
 
-    if (!user || !bcrypt.compareSync(credentials.password, user.password)) {
-      res.status(401).json({ error: 'Invalid credentials' })
-      return
+      if (!user || !bcrypt.compareSync(credentials.password, user.password)) {
+        res.status(401).json({ error: 'Invalid credentials' })
+        return
+      }
+  
+      const token = generateToken(user)
+  
+      res.json({ token });
+    } catch (error) {
+      console.log(error.message)
+      res.status(500).json({ message: 'Something went wrong' })
     }
-
-    const token = generateToken(user)
-
-    res.json({ token });
   }
 
   public readonly register = async (req: Request, res: Response) => {

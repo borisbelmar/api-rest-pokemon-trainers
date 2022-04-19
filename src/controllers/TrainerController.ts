@@ -6,10 +6,15 @@ import { createTrainerSchema, updateTrainerSchema } from '../models/validators/t
 
 export default class TrainerController {
   public readonly getAll = async (req: Request, res: Response) => {
-    const user = req.user as UserTokenPayload
-    const repository = new TrainerRepository(user.id)
-    const trainers = await repository.findAll()
-    res.json(trainers)
+    try {
+      const user = req.user as UserTokenPayload
+      const repository = new TrainerRepository(user.id)
+      const trainers = await repository.findAll()
+      res.json(trainers)
+    } catch(error) {
+      console.log(error.message)
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 
   public readonly getById = async (req: Request, res: Response) => {

@@ -6,23 +6,33 @@ import { createUserSchema, updateUserSchema } from '../models/validators/userSch
 
 export default class UserController {
   public readonly getAll = async (_req: Request, res: Response) => {
-    const repository = new UserRepository()
-    const users = await repository.findAll()
-    res.json(users)
+    try {
+      const repository = new UserRepository()
+      const users = await repository.findAll()
+      res.json(users)
+    } catch (error) {
+      console.log(error.message)
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 
   public readonly getById = async (req: Request, res: Response) => {
     const { id } = req.params
 
     const repository = new UserRepository()
-    const user = await repository.findById(parseInt(id))
+    try {
+      const user = await repository.findById(parseInt(id))
 
-    if (!user) {
-      res.status(404).json({ message: 'User not found' })
-      return
+      if (!user) {
+        res.status(404).json({ message: 'User not found' })
+        return
+      }
+      
+      res.json(user)
+    } catch (error) {
+      console.log(error.message)
+      res.status(500).json({ message: 'Something went wrong' })
     }
-
-    res.json(user)
   }
 
   public readonly create = async (req: Request, res: Response) => {
@@ -46,6 +56,7 @@ export default class UserController {
         res.status(409).json({ message: 'User already exists' })
         return
       }
+      console.log(error.message)
       res.status(500).json({ message: 'Something went wrong' })
     }
   }
@@ -76,7 +87,9 @@ export default class UserController {
     } catch (error) {
       if (error.code = 'P2002') {
         res.status(409).json({ message: 'User already exists' })
+        return
       }
+      console.log(error.message)
       res.status(500).json({ message: 'Something went wrong' })
     }
   }
@@ -90,8 +103,16 @@ export default class UserController {
     }
 
     const repository = new UserRepository()
-    await repository.delete(parseInt(id))
-
-    res.sendStatus(204)
+    try {
+      await repository.delete(parseInt(id))
+      res.sendStatus(204)
+    } catch (error) {
+      if (error.code = 'P2025') {
+        res.status(404).json({ message: 'User not found' })
+        return
+      }
+      console.log(error.message)
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
 }
