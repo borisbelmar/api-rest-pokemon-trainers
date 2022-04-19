@@ -5,7 +5,7 @@ const secret = process.env.JWT_SECRET || 'secret'
 
 export function generateToken(user: UserDTO): string {
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, admin: user.admin },
     secret,
     { expiresIn: '7d' }
   )
